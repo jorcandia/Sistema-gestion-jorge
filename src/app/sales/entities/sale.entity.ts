@@ -44,6 +44,8 @@ export class Sale {
   @JoinColumn({ name: "cashRegisterId" })
   cashRegister: CashRegister;
 
-  @OneToMany(() => SaleDetail, (sale_detail) => sale_detail.sale)
-  sale_detail: SaleDetail[];
+  @OneToMany(() => SaleDetail, (saleDetail) => saleDetail.sale, {
+    cascade: ["insert"],
+  })
+  sale_details: SaleDetail[];
 }

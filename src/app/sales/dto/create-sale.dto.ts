@@ -1,10 +1,15 @@
-//import { Type } from 'class-transformer'
-//import { IsOptional, ValidateNested } from 'class-validator'
-//import { CreateSaleDetailDto } from 'src/sale_details/dto/create-sale_detail.dto'
+import { Type } from "class-transformer";
+import { IsNumber, IsOptional, ValidateNested } from "class-validator";
+import { CreateSaleDetailDto } from "src/app/sale_details/dto/create-sale_detail.dto";
 
 export class CreateSaleDto {
-  /*@ValidateNested({ each: true })
-    @IsOptional()
-    @Type(() => CreateSaleDetailDto)
-    saleDetails: CreateSaleDetailDto[]*/
+  @IsNumber()
+  clientId: number;
+
+  @IsNumber()
+  cashRegisterId: number;
+
+  @ValidateNested({ each: true })
+  @Type(() => CreateSaleDetailDto)
+  sale_details: CreateSaleDetailDto[];
 }

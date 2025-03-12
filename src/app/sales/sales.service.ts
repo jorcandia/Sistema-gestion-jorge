@@ -4,15 +4,44 @@ import { UpdateSaleDto } from "./dto/update-sale.dto";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Sale } from "./entities/sale.entity";
 import { Repository } from "typeorm";
+import { ProductsService } from "../products/products.service";
+import { CreateSaleDetailDto } from "../sale_details/dto/create-sale_detail.dto";
 
 @Injectable()
 export class SalesService {
   constructor(
-    @InjectRepository(Sale) private saleRepository: Repository<Sale>
+    @InjectRepository(Sale) private saleRepository: Repository<Sale>,
+    private productService: ProductsService
   ) {}
-  async create(sale: CreateSaleDto) {
-    const newRecord = this.saleRepository.create(sale);
 
+  async create(sale: CreateSaleDto, user: any) {
+    const details = await Promise.all(
+      sale.sale_details.map(async (detail: CreateSaleDetailDto) => {
+        if (detail.price) {
+          return detail;
+        } else {
+          const product = await this.productService.findOne(detail.productId);
+          if (!product) {
+            throw new Error(
+              `Producto con ID ${detail.productId} no encontrado`
+            );
+          }
+          return { ...detail, price: Number(product.price) };
+        }
+      })
+    );
+    const totalAmount = details.reduce(
+      (accumulator, currentValue) =>
+        accumulator + currentValue.price * currentValue.quantity,
+      0
+    );
+    const newRecord = this.saleRepository.create({
+      ...sale,
+      sale_details: details,
+      totalAmount,
+      userId: user.id,
+    });
+    console.log(user);
     return await this.saleRepository.save(newRecord);
   }
 

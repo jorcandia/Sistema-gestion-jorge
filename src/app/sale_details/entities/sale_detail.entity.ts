@@ -25,7 +25,7 @@ export class SaleDetail {
   @Column({ type: "decimal", precision: 9, scale: 3 })
   price: number;
 
-  @ManyToOne(() => Sale, (sale) => sale.sale_detail)
+  @ManyToOne(() => Sale, (sale) => sale.sale_details)
   @JoinColumn({ name: "saleId" })
   sale: Sale;
 
