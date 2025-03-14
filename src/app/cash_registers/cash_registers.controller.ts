@@ -20,23 +20,23 @@ export class CashRegistersController {
   constructor(private readonly cashRegistersService: CashRegistersService) {}
 
   @Post()
+  @Roles("admin")
   create(@Body() createCashRegisterDto: CreateCashRegisterDto) {
     return this.cashRegistersService.create(createCashRegisterDto);
   }
 
   @Get()
-  @Roles("user")
   findAll() {
     return this.cashRegistersService.findAll();
   }
 
   @Get(":id")
-  @Roles("user")
   findOne(@Param("id") id: string) {
     return this.cashRegistersService.findOne(+id);
   }
 
   @Patch(":id")
+  @Roles("admin")
   update(
     @Param("id") id: string,
     @Body() updateCashRegisterDto: UpdateCashRegisterDto
@@ -45,6 +45,7 @@ export class CashRegistersController {
   }
 
   @Delete(":id")
+  @Roles("admin")
   remove(@Param("id") id: string) {
     return this.cashRegistersService.remove(+id);
   }
