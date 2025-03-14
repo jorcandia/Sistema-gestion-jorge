@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   UseGuards,
+  ParseIntPipe,
 } from "@nestjs/common";
 import { SalesService } from "./sales.service";
 import { CreateSaleDto } from "./dto/create-sale.dto";
@@ -32,19 +33,22 @@ export class SalesController {
   }
 
   @Get(":id")
-  findOne(@Param("id") id: string) {
+  findOne(@Param("id", ParseIntPipe) id: number) {
     return this.salesService.findOne(+id);
   }
 
   @Patch(":id")
   @Roles("admin", "cashier")
-  update(@Param("id") id: string, @Body() updateSaleDto: UpdateSaleDto) {
+  update(
+    @Param("id", ParseIntPipe) id: number,
+    @Body() updateSaleDto: UpdateSaleDto
+  ) {
     return this.salesService.update(+id, updateSaleDto);
   }
 
   @Delete(":id")
   @Roles("admin", "cashier")
-  remove(@Param("id") id: string) {
+  remove(@Param("id", ParseIntPipe) id: number) {
     return this.salesService.remove(+id);
   }
 }

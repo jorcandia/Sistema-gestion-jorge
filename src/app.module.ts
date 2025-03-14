@@ -13,6 +13,8 @@ import { ProductsModule } from "./app/products/products.module";
 import { ClientsModule } from "./app/clients/clients.module";
 import { CategoriesModule } from "./app/categories/categories.module";
 import { ProvidersModule } from "./app/providers/providers.module";
+import { PurchasesModule } from "./app/purchases/purchases.module";
+import { PurchaseDetailsModule } from './app/purchase_details/purchase_details.module';
 
 @Module({
   imports: [
@@ -38,6 +40,8 @@ import { ProvidersModule } from "./app/providers/providers.module";
     ClientsModule,
     CategoriesModule,
     ProvidersModule,
+    PurchasesModule,
+    PurchaseDetailsModule,
   ],
   controllers: [],
   providers: [],
