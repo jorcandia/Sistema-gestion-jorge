@@ -1,4 +1,5 @@
 import { Product } from "src/app/products/entities/product.entity";
+import { Purchase } from "src/app/purchases/entities/purchase.entity";
 import {
   Column,
   CreateDateColumn,
@@ -30,4 +31,7 @@ export class Provider {
 
   @OneToMany(() => Product, (product) => product.provider, { cascade: true })
   products: Product[];
+
+  @OneToMany(() => Purchase, (purchase) => purchase.provider, { cascade: true })
+  purchases: Purchase[];
 }

@@ -1,3 +1,4 @@
+import { Provider } from "src/app/providers/entities/provider.entity";
 import { PurchaseDetail } from "src/app/purchase_details/entities/purchase_detail.entity";
 import { User } from "src/app/users/entities/user.entity";
 import {
@@ -27,16 +28,16 @@ export class Purchase {
   @CreateDateColumn()
   createdAt: Date;
 
-  @OneToMany(
-    () => PurchaseDetail,
-    (purchaseDetail) => purchaseDetail.purchase,
-    {
+  @OneToMany(() => PurchaseDetail, (purchaseDetail) => purchaseDetail.purchase,{
       cascade: ["insert"],
-    }
-  )
+    })
   purchase_details: PurchaseDetail[];
 
   @ManyToOne(() => User, (user) => user.purchases)
   @JoinColumn({ name: "userId" })
   user: User;
+
+  @ManyToOne(() => Provider, (provider) => provider.purchases)
+  @JoinColumn({ name: "providerId" })
+  provider: Provider;
 }
