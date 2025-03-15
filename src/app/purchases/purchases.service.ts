@@ -4,15 +4,43 @@ import { UpdatePurchaseDto } from "./dto/update-purchase.dto";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Purchase } from "./entities/purchase.entity";
 import { Repository } from "typeorm";
+import { ProductsService } from "../products/products.service";
 
 @Injectable()
 export class PurchasesService {
   constructor(
-    @InjectRepository(Purchase) private purchaseRepository: Repository<Purchase>
+    @InjectRepository(Purchase)
+    private purchaseRepository: Repository<Purchase>,
+    private productService: ProductsService
   ) {}
 
-  async create(createPurchaseDto: CreatePurchaseDto) {
-    const newRecord = this.purchaseRepository.create(createPurchaseDto);
+  async create(createPurchaseDto: CreatePurchaseDto, user: any) {
+    const details = await Promise.all(
+      createPurchaseDto.purchase_details.map(async (detail) => {
+        if (detail.cost) {
+          return detail;
+        } else {
+          const product = await this.productService.findOne(detail.productId);
+          if (!product) {
+            throw new Error(
+              `Producto con ID ${detail.productId} no encontrado`
+            );
+          }
+          return { ...detail, cost: Number(product.price) };
+        }
+      })
+    );
+    const totalAmount = details.reduce(
+      (accumulator, currentValue) =>
+        accumulator + currentValue.cost * currentValue.quantity,
+      0
+    );
+    const newRecord = this.purchaseRepository.create({
+      ...createPurchaseDto,
+      purchase_details: details,
+      totalAmount,
+      userId: user.id,
+    });
     return await this.purchaseRepository.save(newRecord);
   }
 

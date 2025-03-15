@@ -1,3 +1,4 @@
+import { Purchase } from "src/app/purchases/entities/purchase.entity";
 import { Role } from "src/app/roles/entities/role.entity";
 import { Sale } from "src/app/sales/entities/sale.entity";
 import {
@@ -33,6 +34,9 @@ export class User {
 
   @OneToMany(() => Sale, (sale) => sale.user)
   sales: Sale[];
+
+  @OneToMany(() => Purchase, (purchase) => purchase.user)
+  purchases: Purchase[];
 
   @CreateDateColumn()
   createdAt: Date;
