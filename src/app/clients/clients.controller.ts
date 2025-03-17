@@ -7,12 +7,14 @@ import {
   Param,
   Delete,
   UseGuards,
+  Query,
 } from "@nestjs/common";
 import { ClientsService } from "./clients.service";
 import { CreateClientDto } from "./dto/create-client.dto";
 import { UpdateClientDto } from "./dto/update-client.dto";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { Roles } from "src/decorator/roles.decorators";
+import { GetClientDto } from "./dto/get-client.dto";
 
 @Controller("clients")
 @UseGuards(JwtAuthGuard)
@@ -26,8 +28,8 @@ export class ClientsController {
   }
 
   @Get()
-  findAll() {
-    return this.clientsService.findAll();
+  findAll(@Query() getClientDto: GetClientDto) {
+    return this.clientsService.findAll(getClientDto);
   }
 
   @Get(":id")

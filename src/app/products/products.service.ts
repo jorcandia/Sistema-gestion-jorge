@@ -20,27 +20,30 @@ export class ProductsService {
   }
 
   async findAll({ size, page, name }: GetProductDto) {
-    type findOptions = { name?: FindOperator<string> }
-    const findOptions: findOptions = {}
-    const nameValues: string[] = name?.split(' ').map((item: string) => item.trim())
+    type findOptions = { name?: FindOperator<string> };
+    const findOptions: findOptions = {};
+    const nameValues: string[] = name
+      ?.split(" ")
+      .map((item: string) => item.trim());
 
-    if (nameValues?.length) findOptions.name = And(...nameValues?.map((n) => ILike(`%${n}%`)))
+    if (nameValues?.length)
+      findOptions.name = And(...nameValues?.map((n) => ILike(`%${n}%`)));
 
     if (page && size) {
-        const [results, total] = await this.productRepository.findAndCount({
-            skip: (page - 1) * size,
-            take: size,
-            order: { id: 'DESC' },
-            where: findOptions,
-        })
-        return new Pagination<Product>({ results, total, page, size })
+      const [results, total] = await this.productRepository.findAndCount({
+        skip: (page - 1) * size,
+        take: size,
+        order: { id: "DESC" },
+        where: findOptions,
+      });
+      return new Pagination<Product>({ results, total, page, size });
     } else {
-        return this.productRepository.find({
-            order: { id: 'DESC' },
-            where: findOptions,
-        })
+      return this.productRepository.find({
+        order: { id: "DESC" },
+        where: findOptions,
+      });
     }
-}
+  }
 
   async findOne(id: number) {
     const productFound = await this.productRepository.findOneBy({ id });

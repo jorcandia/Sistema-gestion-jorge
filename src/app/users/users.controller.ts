@@ -8,6 +8,7 @@ import {
   Delete,
   ParseIntPipe,
   UseGuards,
+  Query,
 } from "@nestjs/common";
 
 import { UsersService } from "src/app/users/users.service";
@@ -15,6 +16,7 @@ import { JwtAuthGuard } from "src/app/auth/jwt-auth.guard";
 import { CreateUserDto } from "src/app/users/dto/create-user.dto";
 import { UpdateUserDto } from "src/app/users/dto/update-user.dto";
 import { Roles } from "src/decorator/roles.decorators";
+import { GetUserDto } from "./dto/get-user.dto";
 
 @Controller("users")
 @UseGuards(JwtAuthGuard)
@@ -28,8 +30,8 @@ export class UsersController {
   }
 
   @Get()
-  findAll() {
-    return this.usersService.findAll();
+  findAll(@Query() getUserDto: GetUserDto) {
+    return this.usersService.findAll(getUserDto);
   }
 
   @Get(":id")

@@ -3,7 +3,9 @@ import { CreateCategoryDto } from "./dto/create-category.dto";
 import { UpdateCategoryDto } from "./dto/update-category.dto";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Category } from "./entities/category.entity";
-import { Repository } from "typeorm";
+import { And, FindOperator, ILike, Repository } from "typeorm";
+import { Pagination } from "src/utils/paginate/pagination";
+import { GetCategotyDto } from "./dto/get-category.dto";
 
 @Injectable()
 export class CategoriesService {
@@ -18,8 +20,30 @@ export class CategoriesService {
     return await this.categoryRepository.save(newCategory);
   }
 
-  async findAll() {
-    return await this.categoryRepository.find();
+  async findAll({ size, page, name }: GetCategotyDto) {
+    type findOptions = { name?: FindOperator<string> };
+    const findOptions: findOptions = {};
+    const nameValues: string[] = name
+      ?.split(" ")
+      .map((item: string) => item.trim());
+
+    if (nameValues?.length)
+      findOptions.name = And(...nameValues?.map((n) => ILike(`%${n}%`)));
+
+    if (page && size) {
+      const [results, total] = await this.categoryRepository.findAndCount({
+        skip: (page - 1) * size,
+        take: size,
+        order: { id: "DESC" },
+        where: findOptions,
+      });
+      return new Pagination<Category>({ results, total, page, size });
+    } else {
+      return this.categoryRepository.find({
+        order: { id: "DESC" },
+        where: findOptions,
+      });
+    }
   }
 
   async findOne(id: number) {

@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   ParseIntPipe,
+  Query,
 } from "@nestjs/common";
 import { SalesService } from "./sales.service";
 import { CreateSaleDto } from "./dto/create-sale.dto";
@@ -15,6 +16,7 @@ import { UpdateSaleDto } from "./dto/update-sale.dto";
 import { User } from "../../decorator/user.decorator";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { Roles } from "src/decorator/roles.decorators";
+import { GetSalesDto } from "./dto/get-sale.dto";
 
 @Controller("sales")
 @UseGuards(JwtAuthGuard)
@@ -28,8 +30,8 @@ export class SalesController {
   }
 
   @Get()
-  findAll() {
-    return this.salesService.findAll();
+  findAll(@Query() getSalesDto: GetSalesDto) {
+    return this.salesService.findAll(getSalesDto);
   }
 
   @Get(":id")

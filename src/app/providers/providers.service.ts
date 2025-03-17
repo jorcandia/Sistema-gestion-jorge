@@ -2,8 +2,10 @@ import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { CreateProviderDto } from "./dto/create-provider.dto";
 import { UpdateProviderDto } from "./dto/update-provider.dto";
 import { Provider } from "./entities/provider.entity";
-import { Repository } from "typeorm";
+import { And, FindOperator, ILike, Repository } from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm";
+import { Pagination } from "src/utils/paginate/pagination";
+import { GetProviderDto } from "./dto/get-provider.dto";
 
 @Injectable()
 export class ProvidersService {
@@ -18,8 +20,30 @@ export class ProvidersService {
     return await this.providerRepository.save(newProvider);
   }
 
-  findAll() {
-    return this.providerRepository.find();
+  async findAll({ size, page, name }: GetProviderDto) {
+    type findOptions = { name?: FindOperator<string> };
+    const findOptions: findOptions = {};
+    const nameValues: string[] = name
+      ?.split(" ")
+      .map((item: string) => item.trim());
+
+    if (nameValues?.length)
+      findOptions.name = And(...nameValues?.map((n) => ILike(`%${n}%`)));
+
+    if (page && size) {
+      const [results, total] = await this.providerRepository.findAndCount({
+        skip: (page - 1) * size,
+        take: size,
+        order: { id: "DESC" },
+        where: findOptions,
+      });
+      return new Pagination<Provider>({ results, total, page, size });
+    } else {
+      return this.providerRepository.find({
+        order: { id: "DESC" },
+        where: findOptions,
+      });
+    }
   }
 
   async findOne(id: number) {
