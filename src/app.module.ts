@@ -16,6 +16,10 @@ import { ProvidersModule } from "./app/providers/providers.module";
 import { PurchasesModule } from "./app/purchases/purchases.module";
 import { PurchaseDetailsModule } from './app/purchase_details/purchase_details.module';
 import { StockMovementsModule } from './app/stock_movements/stock_movements.module';
+import { WarehousesModule } from './app/warehouses/warehouses.module';
+import { WarehouseDetailsModule } from './app/warehouse_details/warehouse_details.module';
+import { AccountsModule } from './app/accounts/accounts.module';
+import { AccountTransactionsModule } from './app/account_transactions/account_transactions.module';
 
 @Module({
   imports: [
@@ -44,6 +48,10 @@ import { StockMovementsModule } from './app/stock_movements/stock_movements.modu
     PurchasesModule,
     PurchaseDetailsModule,
     StockMovementsModule,
+    WarehousesModule,
+    WarehouseDetailsModule,
+    AccountsModule,
+    AccountTransactionsModule,
   ],
   controllers: [],
   providers: [],

@@ -10,39 +10,39 @@ import { UpdateRoleDto } from 'src/app/roles/dto/update-role.dto'
 
 @Injectable()
 export class RolesService {
-  constructor(@InjectRepository(Role) private roleRepository: Repository<Role>) { }
+    constructor(@InjectRepository(Role) private roleRepository: Repository<Role>) {}
 
-  create(createRoleDto: CreateRoleDto) {
-    const newRecord = this.roleRepository.create(createRoleDto)
-    return this.roleRepository.save(newRecord)
-  }
-
-  findAll() {
-    return this.roleRepository.find()
-  }
-
-  async findOne(id: number) {
-    const foundRecord =  await this.roleRepository.findOne({ where: { id } })
-    if (!foundRecord) {
-      return new HttpException('Role not found', HttpStatus.NOT_FOUND)
+    async create(createRoleDto: CreateRoleDto) {
+        const newRecord = this.roleRepository.create(createRoleDto)
+        return await this.roleRepository.save(newRecord)
     }
-    return foundRecord
-  }
 
-  async update(id: number, updateRoleDto: UpdateRoleDto) {
-    const foundRecord =  await this.roleRepository.findOne({ where: { id } })
-    if (!foundRecord) {
-      return new HttpException('Role not found', HttpStatus.NOT_FOUND)
+    findAll() {
+        return this.roleRepository.find()
     }
-    const updatedRecord = Object.assign(foundRecord, updateRoleDto)
-    return this.roleRepository.save(updatedRecord)
-  }
 
-  async remove(id: number) {
-    const result =  await this.roleRepository.delete({ id })
-    if (result.affected === 0) {
-      return new HttpException('Role not found', HttpStatus.NOT_FOUND)
+    async findOne(id: number) {
+        const foundRecord = await this.roleRepository.findOne({ where: { id } })
+        if (!foundRecord) {
+            return new HttpException('Role not found', HttpStatus.NOT_FOUND)
+        }
+        return foundRecord
     }
-    return result
-  }
+
+    async update(id: number, updateRoleDto: UpdateRoleDto) {
+        const foundRecord = await this.roleRepository.findOne({ where: { id } })
+        if (!foundRecord) {
+            return new HttpException('Role not found', HttpStatus.NOT_FOUND)
+        }
+        const updatedRecord = Object.assign(foundRecord, updateRoleDto)
+        return this.roleRepository.save(updatedRecord)
+    }
+
+    async remove(id: number) {
+        const result = await this.roleRepository.delete({ id })
+        if (result.affected === 0) {
+            return new HttpException('Role not found', HttpStatus.NOT_FOUND)
+        }
+        return result
+    }
 }

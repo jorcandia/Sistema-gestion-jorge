@@ -72,7 +72,7 @@ export class ProductsService {
     return result;
   }
 
-  async addMovement(
+  /*async addMovement(
     id: number,
     quantity: number,
     objectId: number,
@@ -98,6 +98,6 @@ export class ProductsService {
     });
   
     return product;
-  }
+  }*/
   
 }
