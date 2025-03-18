@@ -29,7 +29,7 @@ export class SaleDetail {
   @JoinColumn({ name: "saleId" })
   sale: Sale;
 
-  @ManyToOne(() => Product, (product) => product.sale_detail)
+  @ManyToOne(() => Product, (product) => product.sale_details)
   @JoinColumn({ name: "productId" })
   product: Product;
 }

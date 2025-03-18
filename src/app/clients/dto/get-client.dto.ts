@@ -4,5 +4,5 @@ import { PaginationQueryDto } from "src/utils/paginate/pagination-query.dto";
 
 export class GetClientDto extends PartialType(PaginationQueryDto) {
   @IsOptional()
-  firstname: string;
+  name: string;
 }

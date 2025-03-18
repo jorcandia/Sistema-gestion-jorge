@@ -14,10 +14,7 @@ export class Client {
   id: number;
 
   @Column()
-  firstname: string;
-
-  @Column()
-  lastname: string;
+  name: string;
 
   @Column()
   phone: string;

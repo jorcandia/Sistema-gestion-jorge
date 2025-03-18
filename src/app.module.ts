@@ -15,6 +15,7 @@ import { CategoriesModule } from "./app/categories/categories.module";
 import { ProvidersModule } from "./app/providers/providers.module";
 import { PurchasesModule } from "./app/purchases/purchases.module";
 import { PurchaseDetailsModule } from './app/purchase_details/purchase_details.module';
+import { StockMovementsModule } from './app/stock_movements/stock_movements.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { PurchaseDetailsModule } from './app/purchase_details/purchase_details.m
     ProvidersModule,
     PurchasesModule,
     PurchaseDetailsModule,
+    StockMovementsModule,
   ],
   controllers: [],
   providers: [],

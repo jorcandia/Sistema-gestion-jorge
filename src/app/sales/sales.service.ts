@@ -57,65 +57,32 @@ export class SalesService {
     return await this.saleRepository.save(newRecord);
   }
 
-  async findAll({ size, page, clientName }: GetSalesDto) {
-    type findOptions = { clientId?: FindOperator<number> };
+  async findAll({ size, page, name }: GetSalesDto) {
+    type findOptions = { client?: { name?: FindOperator<string> } };
     const findOptions: findOptions = {};
 
-    if (clientName) {
-      const nameValues: string[] = clientName
-        .split(" ")
-        .map((item) => item.trim());
-
-      let clients: Client[] = [];
-
-      if (nameValues.length === 1) {
-        clients = await this.clientRepository.find({
-          where: [
-            { firstname: ILike(`%${nameValues[0]}%`) },
-            { lastname: ILike(`%${nameValues[0]}%`) },
-          ],
-        });
-      } else if (nameValues.length === 2) {
-        clients = await this.clientRepository.find({
-          where: [
-            { firstname: ILike(`%${clientName}%`) },
-            {
-              firstname: ILike(`%${nameValues[0]}%`),
-              lastname: ILike(`%${nameValues[1]}%`),
-            },
-          ],
-        });
-      } else {
-        const firstName = nameValues[0];
-        const lastName = nameValues.slice(1).join(" ");
-
-        clients = await this.clientRepository.find({
-          where: [
-            { firstname: ILike(`%${clientName}%`) },
-            {
-              firstname: ILike(`%${firstName}%`),
-              lastname: ILike(`%${lastName}%`),
-            },
-          ],
-        });
-      }
-
-      const clientIds = clients.map((client) => client.id);
-      findOptions.clientId = In(clientIds);
-    }
+    const nameValues: string[] = name
+      ? name.split(" ").map((item) => item.trim())
+      : [];
+    findOptions.client = {
+      name: And(...nameValues.map((n) => ILike(`%${n}%`))),
+    };
 
     if (page && size) {
       const [results, total] = await this.saleRepository.findAndCount({
         skip: (page - 1) * size,
         take: size,
-        order: { createdAt: "DESC" },
+        order: { id: "DESC" },
         where: findOptions,
+        relations: ["client"],
       });
+
       return new Pagination<Sale>({ results, total, page, size });
     } else {
       return this.saleRepository.find({
-        order: { createdAt: "DESC" },
+        order: { id: "DESC" },
         where: findOptions,
+        relations: ["client"],
       });
     }
   }

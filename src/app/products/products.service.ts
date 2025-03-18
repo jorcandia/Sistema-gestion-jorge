@@ -6,12 +6,14 @@ import { Product } from "./entities/product.entity";
 import { And, FindOperator, ILike, Repository } from "typeorm";
 import { GetProductDto } from "./dto/get-product.dto";
 import { Pagination } from "src/utils/paginate/pagination";
+import { StockMovementsService } from "../stock_movements/stock_movements.service";
 
 @Injectable()
 export class ProductsService {
   constructor(
     @InjectRepository(Product)
-    private productRepository: Repository<Product>
+    private productRepository: Repository<Product>,
+    private stockMovementsService: StockMovementsService
   ) {}
 
   async create(productDto: CreateProductDto) {
@@ -69,4 +71,33 @@ export class ProductsService {
     }
     return result;
   }
+
+  async addMovement(
+    id: number,
+    quantity: number,
+    objectId: number,
+    objectModel: string
+  ) {
+
+    const product = await this.findOne(id);
+    
+    if (quantity < 0) {
+      if (product.quantity < Math.abs(quantity)) {
+        throw new Error('No hay suficiente stock para realizar la venta');
+      }
+    }
+    
+    product.quantity += quantity;
+    await product.save(); // Guardamos la actualización de la cantidad
+    
+    await this.stockMovementsService.create({
+      objectId,
+      objectModel,
+      productId: product.id,
+      quantity,
+    });
+  
+    return product;
+  }
+  
 }

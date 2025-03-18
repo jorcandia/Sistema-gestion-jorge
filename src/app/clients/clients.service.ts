@@ -19,15 +19,15 @@ export class ClientsService {
     return await this.clientRepository.save(newClient);
   }
 
-  async findAll({ size, page, firstname }: GetClientDto) {
-    type findOptions = { firstname?: FindOperator<string> };
+  async findAll({ size, page, name }: GetClientDto) {
+    type findOptions = { name?: FindOperator<string> };
     const findOptions: findOptions = {};
-    const nameValues: string[] = firstname
+    const nameValues: string[] = name
       ?.split(" ")
       .map((item: string) => item.trim());
 
     if (nameValues?.length)
-      findOptions.firstname = And(...nameValues?.map((n) => ILike(`%${n}%`)));
+      findOptions.name = And(...nameValues?.map((n) => ILike(`%${n}%`)));
 
     if (page && size) {
       const [results, total] = await this.clientRepository.findAndCount({

@@ -2,6 +2,7 @@ import { Category } from "src/app/categories/entities/category.entity";
 import { Provider } from "src/app/providers/entities/provider.entity";
 import { PurchaseDetail } from "src/app/purchase_details/entities/purchase_detail.entity";
 import { SaleDetail } from "src/app/sale_details/entities/sale_detail.entity";
+import { StockMovement } from "src/app/stock_movements/entities/stock_movement.entity";
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -52,8 +53,11 @@ export class Product {
   provider: Provider;
 
   @OneToMany(() => SaleDetail, (sale_detail) => sale_detail.product)
-  sale_detail: SaleDetail[];
+  sale_details: SaleDetail[];
 
   @OneToMany(() => PurchaseDetail, (purchase_detail) => purchase_detail.product)
-  purchase_detail: PurchaseDetail[];
+  purchase_details: PurchaseDetail[];
+
+  @OneToMany(() => StockMovement, (stock_movement) => stock_movement.product)
+  stock_movements: StockMovement[];
 }
