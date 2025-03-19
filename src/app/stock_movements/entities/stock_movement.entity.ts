@@ -1,26 +1,26 @@
-import { Product } from "src/app/products/entities/product.entity";
-import { Column, Entity, ManyToMany, ObjectId, PrimaryGeneratedColumn } from "typeorm";
+import { Product } from 'src/app/products/entities/product.entity'
+import { Column, CreateDateColumn, Entity, ManyToMany, PrimaryGeneratedColumn } from 'typeorm'
 
-@Entity({ name: "stock_movements" })
+@Entity({ name: 'stock_movements' })
 export class StockMovement {
-  @PrimaryGeneratedColumn()
-  id: number;
+    @PrimaryGeneratedColumn()
+    id: number
 
-  @Column()
-  productId: number;
+    @Column()
+    wareHouseDetailId: number
 
-  @Column()
-  quantity: number;
+    @Column()
+    quantity: number
 
-  @Column()
-  createdAt: Date;
+    @CreateDateColumn()
+    createdAt: Date
 
-  @Column()
-  objectId: number
+    @Column()
+    objectId: number
 
-  @Column()
-  objectModel: string;
+    @Column()
+    objectModel: string
 
-  @ManyToMany(() => Product, (product) => product.stock_movements)
-  product: Product;
+    @ManyToMany(() => Product, (product) => product.stock_movements)
+    product: Product
 }

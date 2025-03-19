@@ -1,16 +1,16 @@
-import { IsNotEmpty, IsNumber } from "class-validator";
+import { IsNotEmpty, IsNumber } from 'class-validator'
 
 export class CreateStockMovementDto {
-  @IsNotEmpty()
-  @IsNumber()
-  productId: number;
+    @IsNotEmpty()
+    @IsNumber()
+    wareHouseDetailId: number
 
-  @IsNumber()
-  quantity: number;
+    @IsNumber()
+    quantity: number
 
-  @IsNumber()
-  objectId: number;
+    @IsNumber()
+    objectId: number
 
-  @IsNotEmpty()
-  objectModel: string;
+    @IsNotEmpty()
+    objectModel: string
 }

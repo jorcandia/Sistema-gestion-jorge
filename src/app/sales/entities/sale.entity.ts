@@ -1,51 +1,51 @@
-import { CashRegister } from "src/app/cash_registers/entities/cash_register.entity";
-import { Client } from "src/app/clients/entities/client.entity";
-import { SaleDetail } from "src/app/sale_details/entities/sale_detail.entity";
-import { User } from "src/app/users/entities/user.entity";
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  OneToMany,
-  PrimaryGeneratedColumn,
-} from "typeorm";
+import { CashRegister } from 'src/app/cash_registers/entities/cash_register.entity'
+import { Client } from 'src/app/clients/entities/client.entity'
+import { SaleDetail } from 'src/app/sale_details/entities/sale_detail.entity'
+import { User } from 'src/app/users/entities/user.entity'
+import { Warehouse } from 'src/app/warehouses/entities/warehouse.entity'
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm'
 
-@Entity({ name: "sales" })
+@Entity({ name: 'sales' })
 export class Sale {
-  @PrimaryGeneratedColumn()
-  id: number;
+    @PrimaryGeneratedColumn()
+    id: number
 
-  @Column()
-  clientId: number;
+    @Column()
+    clientId: number
 
-  @Column()
-  userId: number;
+    @Column()
+    userId: number
 
-  @Column()
-  cashRegisterId: number;
+    @Column()
+    wareHouseId: number
 
-  @Column({ type: "decimal", precision: 10, scale: 3 })
-  totalAmount: number;
+    @Column()
+    cashRegisterId: number
 
-  @CreateDateColumn()
-  createdAt: Date;
+    @Column({ type: 'decimal', precision: 10, scale: 3 })
+    totalAmount: number
 
-  @ManyToOne(() => Client, (cliente) => cliente.sales)
-  @JoinColumn({ name: "clientId" })
-  client: Client;
+    @CreateDateColumn()
+    createdAt: Date
 
-  @ManyToOne(() => User, (user) => user.sales)
-  @JoinColumn({ name: "userId" })
-  user: User;
+    @ManyToOne(() => Client, (cliente) => cliente.sales)
+    @JoinColumn({ name: 'clientId' })
+    client: Client
 
-  @ManyToOne(() => CashRegister, (cashRegister) => cashRegister.sales)
-  @JoinColumn({ name: "cashRegisterId" })
-  cashRegister: CashRegister;
+    @ManyToOne(() => User, (user) => user.sales)
+    @JoinColumn({ name: 'userId' })
+    user: User
 
-  @OneToMany(() => SaleDetail, (saleDetail) => saleDetail.sale, {
-    cascade: ["insert"],
-  })
-  sale_details: SaleDetail[];
+    @ManyToOne(() => CashRegister, (cashRegister) => cashRegister.sales)
+    @JoinColumn({ name: 'cashRegisterId' })
+    cashRegister: CashRegister
+
+    @OneToMany(() => SaleDetail, (saleDetail) => saleDetail.sale, {
+        cascade: ['insert'],
+    })
+    sale_details: SaleDetail[]
+
+    @ManyToOne(() => Warehouse, (warehouse) => warehouse.sales)
+    @JoinColumn({ name: 'wareHouseId' })
+    warehouse: Warehouse
 }

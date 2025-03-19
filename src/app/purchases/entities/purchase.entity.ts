@@ -1,43 +1,43 @@
-import { Provider } from "src/app/providers/entities/provider.entity";
-import { PurchaseDetail } from "src/app/purchase_details/entities/purchase_detail.entity";
-import { User } from "src/app/users/entities/user.entity";
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  OneToMany,
-  PrimaryGeneratedColumn,
-} from "typeorm";
+import { Provider } from 'src/app/providers/entities/provider.entity'
+import { PurchaseDetail } from 'src/app/purchase_details/entities/purchase_detail.entity'
+import { User } from 'src/app/users/entities/user.entity'
+import { Warehouse } from 'src/app/warehouses/entities/warehouse.entity'
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm'
 
-@Entity({ name: "purchases" })
+@Entity({ name: 'purchases' })
 export class Purchase {
-  @PrimaryGeneratedColumn()
-  id: number;
+    @PrimaryGeneratedColumn()
+    id: number
 
-  @Column()
-  providerId: number;
+    @Column()
+    providerId: number
 
-  @Column()
-  userId: number;
+    @Column()
+    userId: number
 
-  @Column({ type: "decimal", precision: 10, scale: 3 })
-  totalAmount: number;
+    @Column()
+    wareHouseId: number
 
-  @CreateDateColumn()
-  createdAt: Date;
+    @Column({ type: 'decimal', precision: 10, scale: 3 })
+    totalAmount: number
 
-  @OneToMany(() => PurchaseDetail, (purchaseDetail) => purchaseDetail.purchase,{
-      cascade: ["insert"],
+    @CreateDateColumn()
+    createdAt: Date
+
+    @OneToMany(() => PurchaseDetail, (purchaseDetail) => purchaseDetail.purchase, {
+        cascade: ['insert'],
     })
-  purchase_details: PurchaseDetail[];
+    purchase_details: PurchaseDetail[]
 
-  @ManyToOne(() => User, (user) => user.purchases)
-  @JoinColumn({ name: "userId" })
-  user: User;
+    @ManyToOne(() => User, (user) => user.purchases)
+    @JoinColumn({ name: 'userId' })
+    user: User
 
-  @ManyToOne(() => Provider, (provider) => provider.purchases)
-  @JoinColumn({ name: "providerId" })
-  provider: Provider;
+    @ManyToOne(() => Provider, (provider) => provider.purchases)
+    @JoinColumn({ name: 'providerId' })
+    provider: Provider
+
+    @ManyToOne(() => Warehouse, (warehouse) => warehouse.purchases)
+    @JoinColumn({ name: 'wareHouseId' })    
+    warehouse: Warehouse
 }
