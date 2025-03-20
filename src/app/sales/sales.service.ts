@@ -3,7 +3,7 @@ import { CreateSaleDto } from './dto/create-sale.dto'
 import { UpdateSaleDto } from './dto/update-sale.dto'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Sale } from './entities/sale.entity'
-import { And, FindOperator, FindOptionsWhere, ILike, In, Repository } from 'typeorm'
+import { And, FindOperator, ILike, Repository } from 'typeorm'
 import { ProductsService } from '../products/products.service'
 import { CreateSaleDetailDto } from '../sale_details/dto/create-sale_detail.dto'
 import { Pagination } from 'src/utils/paginate/pagination'
@@ -17,7 +17,6 @@ export class SalesService {
         @InjectRepository(Sale) private saleRepository: Repository<Sale>,
 
         @InjectRepository(Client)
-        private readonly clientRepository: Repository<Client>,
         private productService: ProductsService,
         private stockMovementsService: StockMovementsService
     ) {}
@@ -30,7 +29,7 @@ export class SalesService {
                 } else {
                     const product = await this.productService.findOne(detail.productId)
                     if (!product) {
-                        throw new Error(`Producto con ID ${detail.productId} no encontrado`)
+                        throw new Error(`Product con ID ${detail.productId} no encontrado`)
                     }
                     return { ...detail, price: Number(product.price) }
                 }
