@@ -26,7 +26,7 @@ export class PurchasesService {
                     if (!product) {
                         throw new Error(`Producto con ID ${detail.productId} no encontrado`)
                     }
-                    return { ...detail, cost: Number(product.price) }
+                    return { ...detail, cost: Number(product.cost) }
                 }
             })
         )
@@ -40,10 +40,8 @@ export class PurchasesService {
             totalAmount,
             userId: user.id,
         })
-        //return await this.purchaseRepository.save(newRecord);
 
         const createdRecord = await this.purchaseRepository.save(newRecord)
-        console.log(newRecord)
         await Promise.all(
             newRecord.purchase_details.map((purchase_detail) =>
                 this.stockMovementsService.addMovement({
@@ -55,6 +53,7 @@ export class PurchasesService {
                 })
             )
         )
+        return createdRecord
     }
 
     findAll() {

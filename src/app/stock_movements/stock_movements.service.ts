@@ -52,7 +52,7 @@ export class StockMovementsService {
     async addMovement({ productId, quantity, warehouseId, objectId, objectModel }) {
         const warehouseDetail = await this.warehousesDetailService.findOneByWarehouseAndProduct(warehouseId, productId)
 
-        if (quantity > warehouseDetail.quantity) {
+        if (warehouseDetail.quantity + quantity < 0) {
             throw new HttpException('No hay suficiente cantidad en el almacén', HttpStatus.BAD_REQUEST)
         } else {
             await this.warehousesDetailService.update(warehouseDetail.id, {

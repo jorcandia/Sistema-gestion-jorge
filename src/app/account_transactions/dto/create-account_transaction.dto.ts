@@ -1,1 +1,3 @@
-export class CreateAccountTransactionDto {}
+export class CreateAccountTransactionDto {
+    
+}
