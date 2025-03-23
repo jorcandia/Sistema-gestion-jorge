@@ -3,7 +3,7 @@ import { CreateSaleDto } from './dto/create-sale.dto'
 import { UpdateSaleDto } from './dto/update-sale.dto'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Sale } from './entities/sale.entity'
-import { And, FindOperator, ILike, Repository } from 'typeorm'
+import { And, DataSource, FindOperator, ILike, Repository } from 'typeorm'
 import { ProductsService } from '../products/products.service'
 import { CreateSaleDetailDto } from '../sale_details/dto/create-sale_detail.dto'
 import { Pagination } from 'src/utils/paginate/pagination'
@@ -15,52 +15,66 @@ import { StockMovementsService } from '../stock_movements/stock_movements.servic
 export class SalesService {
     constructor(
         @InjectRepository(Sale) private saleRepository: Repository<Sale>,
-
-        @InjectRepository(Client)
         private productService: ProductsService,
-        private stockMovementsService: StockMovementsService
+        private stockMovementsService: StockMovementsService,
+        private dataSource: DataSource
     ) {}
 
     async create(sale: CreateSaleDto, user: any) {
-        const details = await Promise.all(
-            sale.sale_details.map(async (detail: CreateSaleDetailDto) => {
-                if (detail.price) {
-                    return detail
-                } else {
-                    const product = await this.productService.findOne(detail.productId)
-                    if (!product) {
-                        throw new Error(`Product con ID ${detail.productId} no encontrado`)
-                    }
-                    return { ...detail, price: Number(product.price) }
-                }
-            })
-        )
-        const totalAmount = details.reduce(
-            (accumulator, currentValue) => accumulator + currentValue.price * currentValue.quantity,
-            0
-        )
-        const newRecord = this.saleRepository.create({
-            ...sale,
-            sale_details: details,
-            totalAmount,
-            userId: user.id,
-        })
+        const queryRunner = this.dataSource.createQueryRunner()
 
-        const createdRecord = await this.saleRepository.save(newRecord)
-        console.log(newRecord)
-        await Promise.all(
-            newRecord.sale_details.map((sale_detail) =>
-                this.stockMovementsService.addMovement({
-                    productId: sale_detail.productId,
-                    quantity: -1 * sale_detail.quantity,
-                    warehouseId: sale.wareHouseId,
-                    objectId: createdRecord.id,
-                    objectModel: 'Sale',
+        await queryRunner.startTransaction()
+
+        try {
+            const details = await Promise.all(
+                sale.sale_details.map(async (detail: CreateSaleDetailDto) => {
+                    if (detail.price) {
+                        return detail
+                    } else {
+                        const product = await this.productService.findOne(detail.productId)
+                        if (!product) {
+                            throw new Error(`Product con ID ${detail.productId} no encontrado`)
+                        }
+                        return { ...detail, price: Number(product.price) }
+                    }
                 })
             )
-        )
 
-        return createdRecord
+            const totalAmount = details.reduce(
+                (accumulator, currentValue) => accumulator + currentValue.price * currentValue.quantity,
+                0
+            )
+
+            const newRecord = this.saleRepository.create({
+                ...sale,
+                sale_details: details,
+                totalAmount,
+                userId: user.id,
+            })
+
+            const createdRecord = await queryRunner.manager.save(Sale, newRecord)
+
+            await Promise.all(
+                newRecord.sale_details.map((sale_detail) =>
+                    this.stockMovementsService.addMovement({
+                        productId: sale_detail.productId,
+                        quantity: -1 * sale_detail.quantity,
+                        warehouseId: sale.wareHouseId,
+                        objectId: createdRecord.id,
+                        objectModel: 'Sale',
+                    })
+                )
+            )
+
+            await queryRunner.commitTransaction()
+
+            return createdRecord
+        } catch (error) {
+            await queryRunner.rollbackTransaction()
+            throw new HttpException('Error al crear la venta', HttpStatus.INTERNAL_SERVER_ERROR)
+        } finally {
+            await queryRunner.release()
+        }
     }
 
     async findAll({ size, page, name }: GetSalesDto) {
