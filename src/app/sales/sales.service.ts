@@ -3,7 +3,7 @@ import { CreateSaleDto } from './dto/create-sale.dto'
 import { UpdateSaleDto } from './dto/update-sale.dto'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Sale } from './entities/sale.entity'
-import { And, DataSource, FindOperator, ILike, Repository } from 'typeorm'
+import { And, Between, DataSource, FindOperator, ILike, Repository } from 'typeorm'
 import { ProductsService } from '../products/products.service'
 import { CreateSaleDetailDto } from '../sale_details/dto/create-sale_detail.dto'
 import { Pagination } from 'src/utils/paginate/pagination'
@@ -77,13 +77,24 @@ export class SalesService {
         }
     }
 
-    async findAll({ size, page, name }: GetSalesDto) {
-        type findOptions = { client?: { name?: FindOperator<string> } }
-        const findOptions: findOptions = {}
+    async findAll({ size, page, name, startDate, endDate }: GetSalesDto) {
+        type FindOptions = {
+            client?: { name?: FindOperator<string> }
+            createdAt?: FindOperator<Date>
+        }
+        const findOptions: FindOptions = {}
 
-        const nameValues: string[] = name ? name.split(' ').map((item) => item.trim()) : []
-        findOptions.client = {
-            name: And(...nameValues.map((n) => ILike(`%${n}%`))),
+        if (name) {
+            const nameValues: string[] = name.split(' ').map((item) => item.trim())
+            findOptions.client = {
+                name: And(...nameValues.map((n) => ILike(`%${n}%`))),
+            }
+        }
+
+        if (startDate && endDate) {
+            const start = new Date(`${startDate}T00:00:00.000Z`)
+            const end = new Date(`${endDate}T23:59:59.999Z`)
+            findOptions.createdAt = Between(start, end)
         }
 
         if (page && size) {
