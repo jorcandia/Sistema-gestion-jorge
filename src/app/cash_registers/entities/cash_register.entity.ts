@@ -1,8 +1,10 @@
 import { Sale } from "src/app/sales/entities/sale.entity";
+import { User } from "src/app/users/entities/user.entity";
 import {
   Column,
   DeleteDateColumn,
   Entity,
+  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
 } from "typeorm";
@@ -32,6 +34,9 @@ export class CashRegister {
     default: CashRegisterStatus.CLOSED,
   })
   status: CashRegisterStatus;
+
+  @ManyToOne(() => User, { nullable: true })
+  openedBy: User;
 
   @OneToMany(() => Sale, (sale) => sale.cashRegister)
   sales: Sale[];
