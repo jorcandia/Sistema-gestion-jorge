@@ -42,6 +42,13 @@ export class CashRegistersController {
     @Post('open/:id')
     @HttpCode(200)
     async openCashRegister(@Param('id') id: number, @User() user) {
-        return this.cashRegistersService.Open(id, user)
+        return this.cashRegistersService.open(id, user);
+    }
+
+    // Ruta para cerrar la caja
+    @Post('close/:id')
+    @HttpCode(200)
+    async closeCashRegister(@Param('id') id: number, @User() user) {
+        return this.cashRegistersService.close(id, user);
     }
 }

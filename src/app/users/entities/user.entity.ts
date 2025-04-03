@@ -46,6 +46,6 @@ export class User {
     @ManyToOne((type) => Role, (role) => role.users)
     role: Role
 
-    @OneToMany(() => CashRegister, (cashRegister) => cashRegister.openedBy)
+    @OneToMany(() => CashRegister, (cashRegister) => cashRegister.user)
     cashRegisters: CashRegister[]
 }

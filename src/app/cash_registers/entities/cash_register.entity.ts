@@ -1,43 +1,40 @@
-import { Sale } from "src/app/sales/entities/sale.entity";
-import { User } from "src/app/users/entities/user.entity";
-import {
-  Column,
-  DeleteDateColumn,
-  Entity,
-  ManyToOne,
-  OneToMany,
-  PrimaryGeneratedColumn,
-} from "typeorm";
+import { Sale } from 'src/app/sales/entities/sale.entity'
+import { User } from 'src/app/users/entities/user.entity'
+import { Column, DeleteDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm'
 
 export enum CashRegisterStatus {
-  OPEN = "open",
-  CLOSED = "closed",
+    OPEN = 'open',
+    CLOSED = 'closed',
 }
 
-@Entity({ name: "cash_registers" })
+@Entity({ name: 'cash_registers' })
 export class CashRegister {
-  @PrimaryGeneratedColumn()
-  id: number;
+    @PrimaryGeneratedColumn()
+    id: number
 
-  @Column()
-  number: number;
+    @Column()
+    number: number
 
-  @Column({ type: "decimal", precision: 10, scale: 3 })
-  amount: number;
+    @Column({ nullable: true })
+    openedBy: number
 
-  @DeleteDateColumn()
-  deletedAt: Date;
+    @Column({ type: 'decimal', precision: 10, scale: 3 })
+    amount: number
 
-  @Column({
-    type: "enum",
-    enum: CashRegisterStatus,
-    default: CashRegisterStatus.CLOSED,
-  })
-  status: CashRegisterStatus;
+    @DeleteDateColumn()
+    deletedAt: Date
 
-  @ManyToOne(() => User, { nullable: true })
-  openedBy: User;
+    @Column({
+        type: 'enum',
+        enum: CashRegisterStatus,
+        default: CashRegisterStatus.CLOSED,
+    })
+    status: CashRegisterStatus
 
-  @OneToMany(() => Sale, (sale) => sale.cashRegister)
-  sales: Sale[];
+    @ManyToOne(() => User, (user) => user.cashRegisters, { nullable: true })
+    @JoinColumn({ name: 'openedBy' })
+    user: User
+
+    @OneToMany(() => Sale, (sale) => sale.cashRegister)
+    sales: Sale[]
 }

@@ -10,11 +10,14 @@ import { Pagination } from 'src/utils/paginate/pagination'
 import { GetSalesDto } from './dto/get-sale.dto'
 import { Client } from '../clients/entities/client.entity'
 import { StockMovementsService } from '../stock_movements/stock_movements.service'
+import { CashRegister } from 'src/app/cash_registers/entities/cash_register.entity'
+import { CashRegisterStatus } from 'src/app/cash_registers/entities/cash_register.entity'
 
 @Injectable()
 export class SalesService {
     constructor(
         @InjectRepository(Sale) private saleRepository: Repository<Sale>,
+        @InjectRepository(CashRegister) private cashRegisterRepository: Repository<CashRegister>,
         private productService: ProductsService,
         private stockMovementsService: StockMovementsService,
         private dataSource: DataSource
@@ -26,6 +29,18 @@ export class SalesService {
         await queryRunner.startTransaction()
 
         try {
+            const cashRegister = await this.cashRegisterRepository.findOne({
+                where: { id: sale.cashRegisterId },
+            })
+
+            if (!cashRegister) {
+                throw new HttpException('Cash register not found', HttpStatus.NOT_FOUND)
+            }
+
+            if (cashRegister.status === CashRegisterStatus.CLOSED) {
+                throw new HttpException('Cannot make a sale, cash register is closed', HttpStatus.PAYMENT_REQUIRED)
+            }
+
             const details = await Promise.all(
                 sale.sale_details.map(async (detail: CreateSaleDetailDto) => {
                     if (detail.price) {
@@ -33,7 +48,7 @@ export class SalesService {
                     } else {
                         const product = await this.productService.findOne(detail.productId)
                         if (!product) {
-                            throw new Error(`Product con ID ${detail.productId} no encontrado`)
+                            throw new Error(`Product with ID ${detail.productId} not found`)
                         }
                         return { ...detail, price: Number(product.price) }
                     }
@@ -71,7 +86,8 @@ export class SalesService {
             return createdRecord
         } catch (error) {
             await queryRunner.rollbackTransaction()
-            throw new HttpException('Error al crear la venta', HttpStatus.INTERNAL_SERVER_ERROR)
+
+            throw error
         } finally {
             await queryRunner.release()
         }

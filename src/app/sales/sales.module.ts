@@ -7,9 +7,16 @@ import { ProductsModule } from '../products/products.module'
 import { ClientsModule } from '../clients/clients.module'
 import { Client } from '../clients/entities/client.entity'
 import { StockMovementsModule } from '../stock_movements/stock_movements.module'
+import { CashRegistersModule } from '../cash_registers/cash_registers.module'
 
 @Module({
-    imports: [TypeOrmModule.forFeature([Sale, Client]), ProductsModule, ClientsModule, StockMovementsModule],
+    imports: [
+        TypeOrmModule.forFeature([Sale, Client]),
+        ProductsModule,
+        ClientsModule,
+        StockMovementsModule,
+        CashRegistersModule,
+    ],
     controllers: [SalesController],
     providers: [SalesService],
 })
