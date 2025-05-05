@@ -26,6 +26,11 @@ export class PurchaseDetailsController {
         return this.purchaseDetailsService.findOne(+id)
     }
 
+    @Get('purchase/:purchaseId')
+    findByPurchaseId(@Param('purchaseId', ParseIntPipe) purchaseId: number) {
+        return this.purchaseDetailsService.findByPurchaseId(purchaseId)
+    }
+
     @Patch(':id')
     @Roles('admin', 'warehouse')
     update(@Param('id', ParseIntPipe) id: number, @Body() updatePurchaseDetailDto: UpdatePurchaseDetailDto) {
