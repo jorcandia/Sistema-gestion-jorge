@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, UseGuards } from '@nestjs/common'
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, UseGuards, Query } from '@nestjs/common'
 import { PurchasesService } from './purchases.service'
 import { CreatePurchaseDto } from './dto/create-purchase.dto'
 import { UpdatePurchaseDto } from './dto/update-purchase.dto'
+import { GetPurchasesDto } from './dto/get-purchase.dto'
 import { User } from 'src/decorator/user.decorator'
 import { JwtAuthGuard } from '../auth/jwt-auth.guard'
 import { Roles } from 'src/decorator/roles.decorators'
@@ -18,8 +19,8 @@ export class PurchasesController {
     }
 
     @Get()
-    findAll() {
-        return this.purchasesService.findAll()
+    findAll(@Query() getPurchasesDto: GetPurchasesDto) {
+        return this.purchasesService.findAll(getPurchasesDto)
     }
 
     @Get(':id')

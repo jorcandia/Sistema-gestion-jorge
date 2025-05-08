@@ -3,9 +3,11 @@ import { CreatePurchaseDto } from './dto/create-purchase.dto'
 import { UpdatePurchaseDto } from './dto/update-purchase.dto'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Purchase } from './entities/purchase.entity'
-import { Repository } from 'typeorm'
 import { ProductsService } from '../products/products.service'
 import { StockMovementsService } from '../stock_movements/stock_movements.service'
+import { GetPurchasesDto } from './dto/get-purchase.dto'
+import { Pagination } from 'src/utils/paginate/pagination'
+import { And, Between, FindOperator, ILike, Repository } from 'typeorm'
 
 @Injectable()
 export class PurchasesService {
@@ -56,8 +58,42 @@ export class PurchasesService {
         return createdRecord
     }
 
-    findAll() {
-        return this.purchaseRepository.find()
+    async findAll({ page, size, name, startDate, endDate }: GetPurchasesDto) {
+        type FindOptions = {
+            provider?: { name?: FindOperator<string> }
+            createdAt?: FindOperator<Date>
+        }
+        const findOptions: FindOptions = {}
+
+        if (name) {
+            const terms = name.split(' ').map((s) => s.trim())
+            findOptions.provider = {
+                name: And(...terms.map((t) => ILike(`%${t}%`))),
+            }
+        }
+
+        if (startDate && endDate) {
+            const start = new Date(`${startDate}T00:00:00.000Z`)
+            const end = new Date(`${endDate}T23:59:59.999Z`)
+            findOptions.createdAt = Between(start, end)
+        }
+
+        if (page && size) {
+            const [results, total] = await this.purchaseRepository.findAndCount({
+                skip: (page - 1) * size,
+                take: size,
+                order: { id: 'DESC' },
+                where: findOptions,
+                relations: ['provider'],
+            })
+            return new Pagination<Purchase>({ results, total, page, size })
+        }
+
+        return this.purchaseRepository.find({
+            order: { id: 'DESC' },
+            where: findOptions,
+            relations: ['provider'],
+        })
     }
 
     async findOne(id: number) {
