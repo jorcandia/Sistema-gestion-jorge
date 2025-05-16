@@ -84,7 +84,7 @@ export class PurchasesService {
                 take: size,
                 order: { id: 'DESC' },
                 where: findOptions,
-                relations: ['provider'],
+                relations: ['provider', 'warehouse'],
             })
             return new Pagination<Purchase>({ results, total, page, size })
         }
@@ -92,7 +92,7 @@ export class PurchasesService {
         return this.purchaseRepository.find({
             order: { id: 'DESC' },
             where: findOptions,
-            relations: ['provider'],
+            relations: ['provider', 'warehouse'],
         })
     }
 
