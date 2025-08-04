@@ -55,14 +55,25 @@ export class SalesService {
                 })
             )
 
-            const totalAmount = details.reduce(
+            // Agrupar productos por productId y sumar cantidades antes de guardar
+            const groupedDetails: Record<number, CreateSaleDetailDto> = {}
+            for (const detail of details) {
+                if (groupedDetails[detail.productId]) {
+                    groupedDetails[detail.productId].quantity += detail.quantity
+                } else {
+                    groupedDetails[detail.productId] = { ...detail }
+                }
+            }
+            const finalDetails = Object.values(groupedDetails)
+
+            const totalAmount = finalDetails.reduce(
                 (accumulator, currentValue) => accumulator + currentValue.price * currentValue.quantity,
                 0
             )
 
             const newRecord = this.saleRepository.create({
                 ...sale,
-                sale_details: details,
+                sale_details: finalDetails,
                 totalAmount,
                 userId: user.id,
             })

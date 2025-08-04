@@ -31,4 +31,12 @@ export class WarehouseDetailsController {
     remove(@Param('id', ParseIntPipe) id: number) {
         return this.warehouseDetailsService.remove(+id)
     }
+
+    @Get('by-warehouse-product/:warehouseId/:productId')
+    findOneByWarehouseAndProduct(
+        @Param('warehouseId', ParseIntPipe) warehouseId: number,
+        @Param('productId', ParseIntPipe) productId: number
+    ) {
+        return this.warehouseDetailsService.findOneByWarehouseAndProduct(warehouseId, productId)
+    }
 }
