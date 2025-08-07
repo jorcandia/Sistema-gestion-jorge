@@ -78,17 +78,9 @@ export class ProductsService {
         }
         return result
     }
-
     async findByWarehouse(warehouseId: number, { size, page, name }: { size?: number; page?: number; name?: string }) {
-        // Buscar los warehouse_details de ese almacén
-        const details = await this.warehouseDetailsService.findAll()
-        const filtered = details.filter((d) => d.warehouseId === warehouseId && d.quantity > 0)
-        let productIds = filtered.map((d) => d.productId)
-        if (productIds.length === 0)
-            return page && size ? new Pagination<Product>({ results: [], total: 0, page, size }) : []
-
-        // Filtro por nombre si corresponde
-        let findOptions: any = { id: In(productIds) }
+        // Obtener todos los productos según el filtro de nombre
+        let findOptions: any = {}
         if (name) {
             const nameValues: string[] = name.split(' ').map((item: string) => item.trim())
             if (nameValues.length) {
@@ -96,7 +88,10 @@ export class ProductsService {
             }
         }
 
+        // Obtener productos con sus relaciones
+        let products
         if (page && size) {
+            // Obtener productos paginados
             const [results, total] = await this.productRepository.findAndCount({
                 skip: (page - 1) * size,
                 take: size,
@@ -104,13 +99,46 @@ export class ProductsService {
                 where: findOptions,
                 relations: ['provider', 'categories'],
             })
-            return new Pagination<Product>({ results, total, page, size })
+            products = results
+
+            // Obtener todos los warehouse_details para el almacén seleccionado
+            const details = await this.warehouseDetailsService.findAll()
+            const warehouseDetails = details.filter((d) => d.warehouseId === warehouseId)
+
+            // Crear un mapa de producto -> stock para acceso rápido
+            const stockMap = new Map()
+            warehouseDetails.forEach((d) => stockMap.set(d.productId, d.quantity))
+
+            // Agregar el stock a cada producto (0 si no existe en el almacén)
+            const productsWithStock = products.map((product) => ({
+                ...product,
+                stock: stockMap.get(product.id) || 0,
+            }))
+
+            return new Pagination<Product>({ results: productsWithStock, total, page, size })
         } else {
-            return this.productRepository.find({
+            // Si no hay paginación, obtener todos los productos
+            products = await this.productRepository.find({
                 order: { id: 'DESC' },
                 where: findOptions,
                 relations: ['provider', 'categories'],
             })
+
+            // Obtener todos los warehouse_details para el almacén seleccionado
+            const details = await this.warehouseDetailsService.findAll()
+            const warehouseDetails = details.filter((d) => d.warehouseId === warehouseId)
+
+            // Crear un mapa de producto -> stock para acceso rápido
+            const stockMap = new Map()
+            warehouseDetails.forEach((d) => stockMap.set(d.productId, d.quantity))
+
+            // Agregar el stock a cada producto (0 si no existe en el almacén)
+            const productsWithStock = products.map((product) => ({
+                ...product,
+                stock: stockMap.get(product.id) || 0,
+            }))
+
+            return productsWithStock
         }
     }
 }

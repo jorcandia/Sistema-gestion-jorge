@@ -3,15 +3,18 @@ import { CreateStockMovementDto } from './dto/create-stock_movement.dto'
 import { UpdateStockMovementDto } from './dto/update-stock_movement.dto'
 import { InjectRepository } from '@nestjs/typeorm'
 import { StockMovement } from './entities/stock_movement.entity'
-import { Repository } from 'typeorm'
+import { DataSource, Repository } from 'typeorm'
 import { WarehouseDetailsService } from '../warehouse_details/warehouse_details.service'
+import { WarehouseDetail } from '../warehouse_details/entities/warehouse_detail.entity'
+import { InjectDataSource } from '@nestjs/typeorm'
 
 @Injectable()
 export class StockMovementsService {
     constructor(
         @InjectRepository(StockMovement)
         private stockRepository: Repository<StockMovement>,
-        private warehousesDetailService: WarehouseDetailsService
+        private warehousesDetailService: WarehouseDetailsService,
+        private dataSource: DataSource
     ) {}
 
     async create(createStockMovementDto: CreateStockMovementDto) {
@@ -48,22 +51,92 @@ export class StockMovementsService {
         }
         return result
     }
-
     async addMovement({ productId, quantity, warehouseId, objectId, objectModel }) {
-        const warehouseDetail = await this.warehousesDetailService.findOneByWarehouseAndProduct(warehouseId, productId)
+        const queryRunner = this.dataSource.createQueryRunner()
+        await queryRunner.connect()
+        await queryRunner.startTransaction()
 
-        if (warehouseDetail.quantity + quantity < 0) {
-            throw new HttpException('No hay suficiente cantidad en el almacén', HttpStatus.BAD_REQUEST)
-        } else {
-            await this.warehousesDetailService.update(warehouseDetail.id, {
-                quantity: warehouseDetail.quantity + quantity,
+        try {
+            // Intentar encontrar el warehouse_detail existente
+            let warehouseDetail = await queryRunner.manager.findOne(WarehouseDetail, {
+                where: {
+                    productId,
+                    warehouseId,
+                },
+                lock: { mode: 'pessimistic_write' },
             })
+
+            if (!warehouseDetail) {
+                try {
+                    // Si no existe, crear uno nuevo con la cantidad inicial
+                    warehouseDetail = await queryRunner.manager.save(WarehouseDetail, {
+                        productId,
+                        warehouseId,
+                        quantity: quantity, // Para compras, iniciamos con la cantidad que estamos comprando
+                    })
+
+                    // Si estamos en una venta y no existe el warehouse_detail, es un error
+                    if (quantity < 0) {
+                        throw new HttpException(
+                            'No existe relación producto-almacén. No se puede procesar la venta.',
+                            HttpStatus.BAD_REQUEST
+                        )
+                    }
+
+                    // Crear el registro de movimiento para la nueva relación
+                    const stockMovement = await queryRunner.manager.save(StockMovement, {
+                        wareHouseDetailId: warehouseDetail.id,
+                        productId,
+                        quantity,
+                        warehouseId,
+                        objectId,
+                        objectModel,
+                    })
+
+                    await queryRunner.commitTransaction()
+                    return stockMovement
+                } catch (error) {
+                    await queryRunner.rollbackTransaction()
+                    throw new HttpException(
+                        'Error al crear la relación producto-almacén: ' + error.message,
+                        HttpStatus.INTERNAL_SERVER_ERROR
+                    )
+                }
+            } // Para registros existentes: Validar y actualizar cantidad
+            const newQuantity = warehouseDetail.quantity + quantity
+            if (newQuantity < 0) {
+                await queryRunner.rollbackTransaction()
+                throw new HttpException('No hay suficiente cantidad en el almacén', HttpStatus.BAD_REQUEST)
+            }
+
+            try {
+                // Actualizar la cantidad en warehouse_details
+                await queryRunner.manager.update(WarehouseDetail, { id: warehouseDetail.id }, { quantity: newQuantity })
+
+                // Crear el registro de movimiento
+                const stockMovement = await queryRunner.manager.save(StockMovement, {
+                    wareHouseDetailId: warehouseDetail.id,
+                    productId,
+                    quantity,
+                    warehouseId,
+                    objectId,
+                    objectModel,
+                })
+
+                await queryRunner.commitTransaction()
+                return stockMovement
+            } catch (error) {
+                await queryRunner.rollbackTransaction()
+                throw new HttpException(
+                    'Error al actualizar el stock: ' + error.message,
+                    HttpStatus.INTERNAL_SERVER_ERROR
+                )
+            }
+        } catch (error) {
+            await queryRunner.rollbackTransaction()
+            throw error
+        } finally {
+            await queryRunner.release()
         }
-        this.create({
-            wareHouseDetailId: warehouseDetail.id,
-            quantity: quantity,
-            objectId: objectId,
-            objectModel: objectModel,
-        })
     }
 }
