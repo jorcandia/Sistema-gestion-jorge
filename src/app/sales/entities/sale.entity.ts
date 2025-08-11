@@ -41,7 +41,9 @@ export class Sale {
     cashRegister: CashRegister
 
     @OneToMany(() => SaleDetail, (saleDetail) => saleDetail.sale, {
-        cascade: ['insert'],
+        cascade: ['insert', 'update'],
+        onDelete: 'CASCADE',
+        eager: true,
     })
     sale_details: SaleDetail[]
 

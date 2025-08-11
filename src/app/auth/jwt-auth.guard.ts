@@ -15,7 +15,6 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
         }
         const roles = this.reflector.get<string[]>('roles', context.getHandler()) || []
         const hasPermission = roles.length === 0 || roles.includes(user?.role?.key)
-        console.log('User:', user, 'Roles:', roles, 'Has Permission:', hasPermission)
         if (!hasPermission) {
             throw new ForbiddenException('Acceso denegado')
         }

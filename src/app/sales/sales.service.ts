@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
+import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common'
 import { CreateSaleDto } from './dto/create-sale.dto'
 import { UpdateSaleDto } from './dto/update-sale.dto'
 import { InjectRepository } from '@nestjs/typeorm'
@@ -6,6 +6,7 @@ import { Sale } from './entities/sale.entity'
 import { And, Between, DataSource, FindOperator, ILike, Repository } from 'typeorm'
 import { ProductsService } from '../products/products.service'
 import { CreateSaleDetailDto } from '../sale_details/dto/create-sale_detail.dto'
+import { SaleDetail } from '../sale_details/entities/sale_detail.entity'
 import { Pagination } from 'src/utils/paginate/pagination'
 import { GetSalesDto } from './dto/get-sale.dto'
 import { Client } from '../clients/entities/client.entity'
@@ -144,7 +145,10 @@ export class SalesService {
     }
 
     async findOne(id: number) {
-        const recordFound = await this.saleRepository.findOneBy({ id })
+        const recordFound = await this.saleRepository.findOne({
+            where: { id },
+            relations: ['client', 'sale_details', 'sale_details.product'],
+        })
 
         if (!recordFound) {
             throw new HttpException('sale not found', HttpStatus.NOT_FOUND)
@@ -153,13 +157,43 @@ export class SalesService {
     }
 
     async update(id: number, sale: UpdateSaleDto) {
-        const recordFound = await this.saleRepository.findOneBy({ id })
+        const recordFound = await this.saleRepository.findOne({
+            where: { id },
+            relations: ['sale_details'],
+        })
 
         if (!recordFound) {
-            throw new HttpException('sale not found', HttpStatus.NOT_FOUND)
+            throw new HttpException('Sale not found', HttpStatus.NOT_FOUND)
         }
-        const newRecord = { ...recordFound, ...sale }
-        return this.saleRepository.save(newRecord)
+
+        await this.dataSource.createQueryBuilder().delete().from('sale_details').where('saleId = :id', { id }).execute()
+        sale.sale_details?.map((detail) => ({
+            ...detail,
+            sale: recordFound,
+        })) || []
+
+        const newDetails = sale.sale_details?.map((detail) => {
+            const saleDetail = new SaleDetail()
+            saleDetail.saleId = id
+            saleDetail.productId = detail.productId
+            saleDetail.quantity = detail.quantity
+            saleDetail.price = detail.price || 0
+            return saleDetail
+        })
+
+        console.log('New Details Created:', newDetails)
+
+        const newRecord = {
+            ...recordFound,
+            ...sale,
+            sale_details: newDetails,
+        }
+
+        if (newDetails && newDetails.length > 0) {
+            await this.dataSource.createQueryBuilder().insert().into('sale_details').values(newDetails).execute()
+        }
+
+        return await this.saleRepository.save(newRecord)
     }
 
     async remove(id: number) {

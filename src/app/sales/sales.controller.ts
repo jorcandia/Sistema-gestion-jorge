@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, ParseIntPipe, Query } from '@nestjs/common'
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, ParseIntPipe, Query, Put } from '@nestjs/common'
 import { SalesService } from './sales.service'
 import { CreateSaleDto } from './dto/create-sale.dto'
 import { UpdateSaleDto } from './dto/update-sale.dto'
@@ -28,7 +28,7 @@ export class SalesController {
         return this.salesService.findOne(+id)
     }
 
-    @Patch(':id')
+    @Put(':id')
     @Roles('admin', 'cashier')
     update(@Param('id', ParseIntPipe) id: number, @Body() updateSaleDto: UpdateSaleDto) {
         return this.salesService.update(+id, updateSaleDto)
