@@ -9,7 +9,7 @@ export default registerAs('database', () => ({
     database: process.env.DB_NAME,
     entities: [`${__dirname}/../**/*.entity{.ts,.js}`],
     synchronize: false,
-    logging: false, // Cambiar de process.env.NODE_ENV === 'development' a false
+    logging: false, 
     migrations: [`${__dirname}/../../db/migrations/*{.ts,.js}`],
     migrationsTableName: 'migrations',
     returning: 'all',

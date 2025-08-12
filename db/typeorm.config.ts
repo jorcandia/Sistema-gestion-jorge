@@ -15,7 +15,7 @@ export default new DataSource({
     database: configService.get('DB_NAME'),
     entities: [`${__dirname}/../src/**/*.entity{.ts,.js}`],
     synchronize: configService.get('nodenv') === 'development',
-    logging: false, // Cambiar de configService.get("nodenv") === "development" a false
+    logging: false, 
     migrations: [`${__dirname}/migrations/*{.ts,.js}`],
     migrationsTableName: 'migrations',
 })

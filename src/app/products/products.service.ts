@@ -3,7 +3,7 @@ import { CreateProductDto } from './dto/create-product.dto'
 import { UpdateProductDto } from './dto/update-product.dto'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Product } from './entities/product.entity'
-import { And, FindOperator, ILike, In, Repository } from 'typeorm'
+import { And, FindOperator, ILike, Repository } from 'typeorm'
 import { GetProductDto } from './dto/get-product.dto'
 import { Pagination } from 'src/utils/paginate/pagination'
 import { StockMovementsService } from '../stock_movements/stock_movements.service'
@@ -41,7 +41,7 @@ export class ProductsService {
                 take: size,
                 order: { id: 'DESC' },
                 where: findOptions,
-                relations: ['provider', 'categories'],
+                relations: ['provider', 'categories', 'warehouseDetails'],
             })
 
             return new Pagination<Product>({ results, total, page, size })
@@ -49,7 +49,7 @@ export class ProductsService {
             return this.productRepository.find({
                 order: { id: 'DESC' },
                 where: findOptions,
-                relations: ['provider', 'categories'],
+                relations: ['provider', 'categories', 'warehouseDetails'],
             })
         }
     }

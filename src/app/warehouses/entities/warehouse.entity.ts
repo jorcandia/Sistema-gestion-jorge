@@ -1,5 +1,6 @@
 import { Purchase } from 'src/app/purchases/entities/purchase.entity'
 import { Sale } from 'src/app/sales/entities/sale.entity'
+import { WarehouseDetail } from 'src/app/warehouse_details/entities/warehouse_detail.entity'
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm'
 
 @Entity({ name: 'warehouses' })
@@ -18,4 +19,7 @@ export class Warehouse {
 
     @OneToMany(() => Purchase, (purchase) => purchase.warehouse)
     purchases: Purchase[]
+
+    @OneToMany(() => WarehouseDetail, (wd) => wd.warehouse)
+    warehouseDetails: WarehouseDetail[]
 }

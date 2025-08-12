@@ -1,63 +1,67 @@
-import { Category } from "src/app/categories/entities/category.entity";
-import { Provider } from "src/app/providers/entities/provider.entity";
-import { PurchaseDetail } from "src/app/purchase_details/entities/purchase_detail.entity";
-import { SaleDetail } from "src/app/sale_details/entities/sale_detail.entity";
-import { StockMovement } from "src/app/stock_movements/entities/stock_movement.entity";
+import { Category } from 'src/app/categories/entities/category.entity'
+import { Provider } from 'src/app/providers/entities/provider.entity'
+import { PurchaseDetail } from 'src/app/purchase_details/entities/purchase_detail.entity'
+import { SaleDetail } from 'src/app/sale_details/entities/sale_detail.entity'
+import { StockMovement } from 'src/app/stock_movements/entities/stock_movement.entity'
+import { WarehouseDetail } from 'src/app/warehouse_details/entities/warehouse_detail.entity'
 import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  ManyToMany,
-  JoinTable,
-  ManyToOne,
-  JoinColumn,
-  DeleteDateColumn,
-  OneToMany,
-} from "typeorm";
+    Entity,
+    PrimaryGeneratedColumn,
+    Column,
+    ManyToMany,
+    JoinTable,
+    ManyToOne,
+    JoinColumn,
+    DeleteDateColumn,
+    OneToMany,
+} from 'typeorm'
 
-@Entity({ name: "products" })
+@Entity({ name: 'products' })
 export class Product {
-  @PrimaryGeneratedColumn()
-  id: number;
+    @PrimaryGeneratedColumn()
+    id: number
 
-  @Column()
-  name: string;
+    @Column()
+    name: string
 
-  @Column()
-  description: string;
+    @Column()
+    description: string
 
-  @Column()
-  providerId: number;
+    @Column()
+    providerId: number
 
-  @Column({ type: "decimal", precision: 9, scale: 3 })
-  price: number;
+    @Column({ type: 'decimal', precision: 9, scale: 3 })
+    price: number
 
-  @Column({ type: "decimal", precision: 10, scale: 3 })
-  cost: number;
+    @Column({ type: 'decimal', precision: 10, scale: 3 })
+    cost: number
 
-  @DeleteDateColumn()
-  deletedAt: Date;
+    @DeleteDateColumn()
+    deletedAt: Date
 
-  @ManyToMany(() => Category, (category) => category.products, {
-    cascade: ["insert"],
-  })
-  @JoinTable({
-    name: "categories_per_products",
-    joinColumn: { name: "productId", referencedColumnName: "id" },
-    inverseJoinColumn: { name: "categoryId", referencedColumnName: "id" },
-  })
-  categories: Category[];
+    @ManyToMany(() => Category, (category) => category.products, {
+        cascade: ['insert'],
+    })
+    @JoinTable({
+        name: 'categories_per_products',
+        joinColumn: { name: 'productId', referencedColumnName: 'id' },
+        inverseJoinColumn: { name: 'categoryId', referencedColumnName: 'id' },
+    })
+    categories: Category[]
 
-  @ManyToOne(() => Provider, (provider) => provider.products)
-  @JoinColumn({ name: "providerId" })
-  provider: Provider;
+    @ManyToOne(() => Provider, (provider) => provider.products)
+    @JoinColumn({ name: 'providerId' })
+    provider: Provider
 
-  @OneToMany(() => SaleDetail, (sale_detail) => sale_detail.product)
-  sale_details: SaleDetail[];
+    @OneToMany(() => SaleDetail, (sale_detail) => sale_detail.product)
+    sale_details: SaleDetail[]
 
-  @OneToMany(() => PurchaseDetail, (purchase_detail) => purchase_detail.product)
-  purchase_details: PurchaseDetail[];
+    @OneToMany(() => PurchaseDetail, (purchase_detail) => purchase_detail.product)
+    purchase_details: PurchaseDetail[]
 
-  @OneToMany(() => StockMovement, (stock_movement) => stock_movement.product)
-  stock_movements: StockMovement[];
+    @OneToMany(() => StockMovement, (stock_movement) => stock_movement.product)
+    stock_movements: StockMovement[]
+
+    @OneToMany(() => WarehouseDetail, (wd) => wd.product)
+    warehouseDetails: WarehouseDetail[]
 }
