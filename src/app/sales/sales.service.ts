@@ -147,7 +147,7 @@ export class SalesService {
     async findOne(id: number) {
         const recordFound = await this.saleRepository.findOne({
             where: { id },
-            relations: ['client', 'sale_details', 'sale_details.product'],
+            relations: ['client', 'sale_details', 'sale_details.product', 'sale_details.product.warehouseDetails'],
         })
 
         if (!recordFound) {
