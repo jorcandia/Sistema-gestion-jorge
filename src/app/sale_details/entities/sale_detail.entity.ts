@@ -1,35 +1,43 @@
-import { Product } from "src/app/products/entities/product.entity";
-import { Sale } from "src/app/sales/entities/sale.entity";
+import { Product } from 'src/app/products/entities/product.entity'
+import { Sale } from 'src/app/sales/entities/sale.entity'
 import {
-  Column,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-} from "typeorm";
+    Column,
+    CreateDateColumn,
+    DeleteDateColumn,
+    Entity,
+    JoinColumn,
+    ManyToOne,
+    PrimaryGeneratedColumn,
+} from 'typeorm'
 
-@Entity({ name: "sale_details" })
+@Entity({ name: 'sale_details' })
 export class SaleDetail {
-  @PrimaryGeneratedColumn()
-  id: number;
+    @PrimaryGeneratedColumn()
+    id: number
 
-  @Column()
-  productId: number;
+    @Column()
+    productId: number
 
-  @Column()
-  saleId: number;
+    @Column()
+    saleId: number
 
-  @Column()
-  quantity: number;
+    @Column()
+    quantity: number
 
-  @Column({ type: "decimal", precision: 9, scale: 3 })
-  price: number;
+    @Column({ type: 'decimal', precision: 9, scale: 3 })
+    price: number
 
-  @ManyToOne(() => Sale, (sale) => sale.sale_details)
-  @JoinColumn({ name: "saleId" })
-  sale: Sale;
+    @CreateDateColumn()
+    createdAt: Date
 
-  @ManyToOne(() => Product, (product) => product.sale_details)
-  @JoinColumn({ name: "productId" })
-  product: Product;
+    @DeleteDateColumn()
+    deletedAt: Date
+
+    @ManyToOne(() => Sale, (sale) => sale.sale_details)
+    @JoinColumn({ name: 'saleId' })
+    sale: Sale
+
+    @ManyToOne(() => Product, (product) => product.sale_details)
+    @JoinColumn({ name: 'productId' })
+    product: Product
 }

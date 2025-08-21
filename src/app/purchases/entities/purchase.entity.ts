@@ -1,8 +1,17 @@
-import { Provider } from 'src/app/providers/entities/provider.entity'
-import { PurchaseDetail } from 'src/app/purchase_details/entities/purchase_detail.entity'
 import { User } from 'src/app/users/entities/user.entity'
+import { Provider } from 'src/app/providers/entities/provider.entity'
 import { Warehouse } from 'src/app/warehouses/entities/warehouse.entity'
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm'
+import { PurchaseDetail } from 'src/app/purchase_details/entities/purchase_detail.entity'
+import {
+    Column,
+    CreateDateColumn,
+    DeleteDateColumn,
+    Entity,
+    JoinColumn,
+    ManyToOne,
+    OneToMany,
+    PrimaryGeneratedColumn,
+} from 'typeorm'
 
 @Entity({ name: 'purchases' })
 export class Purchase {
@@ -24,6 +33,9 @@ export class Purchase {
     @CreateDateColumn()
     createdAt: Date
 
+    @DeleteDateColumn()
+    deletedAt: Date
+
     @OneToMany(() => PurchaseDetail, (purchaseDetail) => purchaseDetail.purchase, {
         cascade: ['insert'],
     })
@@ -38,6 +50,6 @@ export class Purchase {
     provider: Provider
 
     @ManyToOne(() => Warehouse, (warehouse) => warehouse.purchases)
-    @JoinColumn({ name: 'wareHouseId' })    
+    @JoinColumn({ name: 'wareHouseId' })
     warehouse: Warehouse
 }

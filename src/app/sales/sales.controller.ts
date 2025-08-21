@@ -23,6 +23,12 @@ export class SalesController {
         return this.salesService.findAll(getSalesDto)
     }
 
+    @Get('deleted')
+    @Roles('admin')
+    findDeleted(@Query() getSalesDto: GetSalesDto) {
+        return this.salesService.findDeleted(getSalesDto)
+    }
+
     @Get(':id')
     findOne(@Param('id', ParseIntPipe) id: number) {
         return this.salesService.findOne(+id)
@@ -38,5 +44,11 @@ export class SalesController {
     @Roles('admin', 'cashier')
     remove(@Param('id', ParseIntPipe) id: number) {
         return this.salesService.remove(+id)
+    }
+
+    @Post(':id/restore')
+    @Roles('admin')
+    restore(@Param('id', ParseIntPipe) id: number) {
+        return this.salesService.restore(+id)
     }
 }

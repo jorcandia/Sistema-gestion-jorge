@@ -1,21 +1,25 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
-import { CreatePurchaseDto } from './dto/create-purchase.dto'
-import { UpdatePurchaseDto } from './dto/update-purchase.dto'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Purchase } from './entities/purchase.entity'
-import { ProductsService } from '../products/products.service'
-import { StockMovementsService } from '../stock_movements/stock_movements.service'
 import { GetPurchasesDto } from './dto/get-purchase.dto'
 import { Pagination } from 'src/utils/paginate/pagination'
-import { And, Between, FindOperator, ILike, Repository } from 'typeorm'
+import { CreatePurchaseDto } from './dto/create-purchase.dto'
+import { UpdatePurchaseDto } from './dto/update-purchase.dto'
+import { ProductsService } from '../products/products.service'
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
+import { StockMovementsService } from '../stock_movements/stock_movements.service'
+import { And, Between, DataSource, FindOperator, ILike, Repository } from 'typeorm'
+import { PurchaseDetail } from '../purchase_details/entities/purchase_detail.entity'
 
 @Injectable()
 export class PurchasesService {
     constructor(
         @InjectRepository(Purchase)
         private purchaseRepository: Repository<Purchase>,
+        @InjectRepository(PurchaseDetail)
+        private purchaseDetailRepository: Repository<PurchaseDetail>,
         private productService: ProductsService,
-        private stockMovementsService: StockMovementsService
+        private stockMovementsService: StockMovementsService,
+        private dataSource: DataSource
     ) {}
 
     async create(createPurchaseDto: CreatePurchaseDto, user: any) {
@@ -116,11 +120,54 @@ export class PurchasesService {
     }
 
     async remove(id: number) {
-        const result = await this.purchaseRepository.softDelete(id)
+        const queryRunner = this.dataSource.createQueryRunner()
+        await queryRunner.startTransaction()
 
-        if (result.affected === 0) {
-            throw new HttpException('purchase not found', HttpStatus.NOT_FOUND)
+        try {
+            const purchase = await this.purchaseRepository.findOne({
+                where: { id },
+                relations: ['purchase_details'],
+            })
+
+            if (!purchase) {
+                throw new HttpException('purchase not found', HttpStatus.NOT_FOUND)
+            }
+
+            // Verificar si la compra ya está eliminada
+            if (purchase.deletedAt) {
+                throw new HttpException('purchase is already deleted', HttpStatus.BAD_REQUEST)
+            }
+
+            // Descontar movimientos de stock para quitar productos del inventario
+            await Promise.all(
+                purchase.purchase_details.map((purchase_detail) =>
+                    this.stockMovementsService.addMovement({
+                        productId: purchase_detail.productId,
+                        quantity: -purchase_detail.quantity, // Negativo para descontar
+                        warehouseId: purchase.wareHouseId,
+                        objectId: purchase.id,
+                        objectModel: 'Purchase_Cancelled',
+                    })
+                )
+            )
+
+            // Soft delete de la compra
+            const result = await queryRunner.manager.softDelete(Purchase, { id })
+
+            if (result.affected === 0) {
+                throw new HttpException('purchase not found', HttpStatus.NOT_FOUND)
+            }
+
+            // Soft delete de los detalles de compra en cascada
+            await queryRunner.manager.softDelete(PurchaseDetail, { purchaseId: id })
+
+            await queryRunner.commitTransaction()
+            return result
+        } catch (error) {
+            await queryRunner.rollbackTransaction()
+            throw error
+        } finally {
+            await queryRunner.release()
         }
-        return result
     }
 }
