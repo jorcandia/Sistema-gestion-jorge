@@ -55,7 +55,10 @@ export class ProductsService {
     }
 
     async findOne(id: number) {
-        const productFound = await this.productRepository.findOneBy({ id })
+        const productFound = await this.productRepository.findOne({
+            where: { id },
+            relations: ['provider', 'categories'],
+        })
         if (!productFound) {
             throw new HttpException('Product not found', HttpStatus.NOT_FOUND)
         }
@@ -63,7 +66,10 @@ export class ProductsService {
     }
 
     async update(id: number, product: UpdateProductDto) {
-        const productFound = await this.productRepository.findOneBy({ id })
+        const productFound = await this.productRepository.findOne({
+            where: { id },
+            relations: ['provider', 'categories'],
+        })
         if (!productFound) {
             throw new HttpException('Product not found', HttpStatus.NOT_FOUND)
         }

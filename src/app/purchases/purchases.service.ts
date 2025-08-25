@@ -13,10 +13,8 @@ import { PurchaseDetail } from '../purchase_details/entities/purchase_detail.ent
 @Injectable()
 export class PurchasesService {
     constructor(
-        @InjectRepository(Purchase)
-        private purchaseRepository: Repository<Purchase>,
-        @InjectRepository(PurchaseDetail)
-        private purchaseDetailRepository: Repository<PurchaseDetail>,
+        @InjectRepository(Purchase) private purchaseRepository: Repository<Purchase>,
+        @InjectRepository(PurchaseDetail) private purchaseDetailRepository: Repository<PurchaseDetail>,
         private productService: ProductsService,
         private stockMovementsService: StockMovementsService,
         private dataSource: DataSource
@@ -101,7 +99,15 @@ export class PurchasesService {
     }
 
     async findOne(id: number) {
-        const recordFound = await this.purchaseRepository.findOneBy({ id })
+        const recordFound = await this.purchaseRepository.findOne({
+            where: { id },
+            relations: [
+                'provider',
+                'purchase_details',
+                'purchase_details.product',
+                'purchase_details.product.warehouseDetails',
+            ],
+        })
 
         if (!recordFound) {
             throw new HttpException('purchase not found', HttpStatus.NOT_FOUND)
